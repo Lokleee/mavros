@@ -152,6 +152,47 @@ public:
 		sp.body_pitch_rate = body_rate.y();
 		sp.body_yaw_rate = body_rate.z();
 		// [[[end]]] (checksum: aa941484927bb7a7d39a2c31d08fcfc1)
+		// ROS_INFO("setting the attitude target");
+
+		UAS_FCU(m_uas_)->send_message_ignore_drop(sp);
+	}
+};
+
+/**
+ * @brief This mixin adds set_omni_attitude_target()
+ */
+template <class D>
+class SetOmniAttitudeTargetMixin {
+public:
+	void set_omni_attitude_target(uint32_t time_boot_ms,
+			uint8_t type_mask,
+			Eigen::Quaterniond orientation,
+			Eigen::Vector3d body_rate,
+			Eigen::Vector3d thrust)
+	{
+		mavros::UAS *m_uas_ = static_cast<D *>(this)->m_uas;
+		mavlink::common::msg::SET_OMNI_ATTITUDE_TARGET sp = {};
+
+		m_uas_->msg_set_target(sp);
+		mavros::ftf::quaternion_to_mavlink(orientation, sp.q);
+
+		// [[[cog:
+		// for f in ('time_boot_ms', 'type_mask', 'thrust'):
+		//     cog.outl("sp.%s = %s;" % (f, f))
+		// for f, v in (('roll', 'x'), ('pitch', 'y'), ('yaw', 'z')):
+		//     cog.outl("sp.body_%s_rate = body_rate.%s();" % (f, v))
+		// ]]]
+		sp.time_boot_ms = time_boot_ms;
+		sp.type_mask = type_mask;
+		// sp.thrust = [thrust.x, thrust.y, thrust.z];
+		sp.thrust[0] = thrust[0];
+		sp.thrust[1] = thrust[1];
+		sp.thrust[2] = thrust[2];
+		sp.body_roll_rate = body_rate.x();
+		sp.body_pitch_rate = body_rate.y();
+		sp.body_yaw_rate = body_rate.z();
+		// [[[end]]] (checksum: aa941484927bb7a7d39a2c31d08fcfc1)
+		// ROS_INFO("setting the omni attitude target");
 
 		UAS_FCU(m_uas_)->send_message_ignore_drop(sp);
 	}

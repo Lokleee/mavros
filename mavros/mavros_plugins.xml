@@ -54,6 +54,9 @@
   <class name="setpoint_attitude" type="mavros::std_plugins::SetpointAttitudePlugin" base_class_type="mavros::plugin::PluginBase">
     <description>Send to FCU external attitude setpoint.</description>
   </class>
+  <class name="setpoint_omni_attitude" type="mavros::std_plugins::SetpointOmniAttitudePlugin" base_class_type="mavros::plugin::PluginBase">
+    <description>Send to FCU external OMNI attitude setpoint.</description>
+  </class>
   <class name="setpoint_raw" type="mavros::std_plugins::SetpointRawPlugin" base_class_type="mavros::plugin::PluginBase">
     <description>Access to raw POSITION_TARGET_LOCAL_NED messages.</description>
   </class>

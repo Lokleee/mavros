@@ -143,6 +143,7 @@ add_library(mavros_plugins
   src/plugins/safety_area.cpp
   src/plugins/setpoint_accel.cpp
   src/plugins/setpoint_attitude.cpp
+  src/plugins/setpoint_attitude_omni.cpp
   src/plugins/setpoint_position.cpp
   src/plugins/setpoint_raw.cpp
   src/plugins/setpoint_velocity.cpp

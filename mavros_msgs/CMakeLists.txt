@@ -12,6 +12,7 @@ add_message_files(
   ActuatorControl.msg
   Altitude.msg
   AttitudeTarget.msg
+  AttitudeTargetOmni.msg
   BatteryStatus.msg
   CamIMUStamp.msg
   CellularStatus.msg
@@ -63,6 +64,7 @@ add_message_files(
   SysStatus.msg
   TerrainReport.msg
   Thrust.msg
+  ThrustOmni.msg
   TimesyncStatus.msg
   Trajectory.msg
   Tunnel.msg

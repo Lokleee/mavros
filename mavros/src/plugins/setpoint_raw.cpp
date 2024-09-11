@@ -19,6 +19,7 @@
 #include <eigen_conversions/eigen_msg.h>
 
 #include <mavros_msgs/AttitudeTarget.h>
+#include <mavros_msgs/AttitudeTargetOmni.h>
 #include <mavros_msgs/PositionTarget.h>
 #include <mavros_msgs/GlobalPositionTarget.h>
 
@@ -33,6 +34,7 @@ namespace std_plugins {
 class SetpointRawPlugin : public plugin::PluginBase,
 	private plugin::SetPositionTargetLocalNEDMixin<SetpointRawPlugin>,
 	private plugin::SetPositionTargetGlobalIntMixin<SetpointRawPlugin>,
+	private plugin::SetOmniAttitudeTargetMixin<SetpointRawPlugin>,
 	private plugin::SetAttitudeTargetMixin<SetpointRawPlugin> {
 public:
 	SetpointRawPlugin() : PluginBase(),
@@ -48,6 +50,7 @@ public:
 		local_sub = sp_nh.subscribe("local", 10, &SetpointRawPlugin::local_cb, this);
 		global_sub = sp_nh.subscribe("global", 10, &SetpointRawPlugin::global_cb, this);
 		attitude_sub = sp_nh.subscribe("attitude", 10, &SetpointRawPlugin::attitude_cb, this);
+		omni_attitude_sub = sp_nh.subscribe("omni_attitude", 10, &SetpointRawPlugin::omni_attitude_cb, this);
 		target_local_pub = sp_nh.advertise<mavros_msgs::PositionTarget>("target_local", 10);
 		target_global_pub = sp_nh.advertise<mavros_msgs::GlobalPositionTarget>("target_global", 10);
 		target_attitude_pub = sp_nh.advertise<mavros_msgs::AttitudeTarget>("target_attitude", 10);
@@ -73,9 +76,10 @@ private:
 	friend class SetPositionTargetLocalNEDMixin;
 	friend class SetPositionTargetGlobalIntMixin;
 	friend class SetAttitudeTargetMixin;
+	friend class SetOmniAttitudeTargetMixin;
 	ros::NodeHandle sp_nh;
 
-	ros::Subscriber local_sub, global_sub, attitude_sub;
+	ros::Subscriber local_sub, global_sub, attitude_sub, omni_attitude_sub;
 	ros::Publisher target_local_pub, target_global_pub, target_attitude_pub;
 
 	double thrust_scaling;
@@ -268,6 +272,49 @@ private:
 			ftf::to_eigen(req->body_rate));
 
 		set_attitude_target(
+					req->header.stamp.toNSec() / 1000000,
+					req->type_mask,
+					ned_desired_orientation,
+					body_rate,
+					thrust);
+
+	}
+
+	void omni_attitude_cb(const mavros_msgs::AttitudeTargetOmni::ConstPtr &req)
+	{
+		Eigen::Quaterniond desired_orientation;
+		Eigen::Vector3d baselink_angular_rate;
+		Eigen::Vector3d body_rate;
+		Eigen::Vector3d thrust;
+
+		// ignore thrust is false by default, unless no thrust scaling is set or thrust is zero
+		auto ignore_thrust = req->thrust.z != 0.0 && thrust_scaling < 0.0;
+
+		if (ignore_thrust) {
+			// I believe it's safer without sending zero thrust, but actually ignoring the actuation.
+			ROS_FATAL_THROTTLE_NAMED(5, "setpoint_raw", "Recieved thrust, but ignore_thrust is true: "
+				"the most likely cause of this is a failure to specify the thrust_scaling parameters "
+				"on px4/apm_config.yaml. Actuation will be ignored.");
+			return;
+		} else {
+			if (thrust_scaling == 0.0) {
+				ROS_WARN_THROTTLE_NAMED(5, "setpoint_raw", "thrust_scaling parameter is set to zero.");
+			}
+			thrust[2] = std::min(1.0, std::max(0.0, req->thrust.z * thrust_scaling));
+		}
+
+		// Take care of attitude setpoint
+		desired_orientation = ftf::to_eigen(req->orientation);
+
+		// Transform desired orientation to represent aircraft->NED,
+		// MAVROS operates on orientation of base_link->ENU
+		auto ned_desired_orientation = ftf::transform_orientation_enu_ned(
+			ftf::transform_orientation_baselink_aircraft(desired_orientation));
+
+		body_rate = ftf::transform_frame_baselink_aircraft(
+			ftf::to_eigen(req->body_rate));
+
+		set_omni_attitude_target(
 					req->header.stamp.toNSec() / 1000000,
 					req->type_mask,
 					ned_desired_orientation,
