@@ -132,6 +132,7 @@ add_library(mavros_plugins
   src/plugins/global_position.cpp
   src/plugins/hil.cpp
   src/plugins/home_position.cpp
+  src/plugins/hover_thrust_estimate.cpp
   src/plugins/imu.cpp
   src/plugins/local_position.cpp
   src/plugins/manual_control.cpp

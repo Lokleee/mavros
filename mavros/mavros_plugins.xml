@@ -63,6 +63,9 @@
   <class name="setpoint_trajectory" type="mavros::std_plugins::SetpointTrajectoryPlugin" base_class_type="mavros::plugin::PluginBase">
     <description>Send to FCU setpoints from trajectory.</description>
   </class>
+  <class name="hover_thrust_estimate" type="mavros::std_plugins::HoverThrustEstimatePlugin" base_class_type="mavros::plugin::PluginBase">
+    <description>Sends estimate hover thrust to FCU controller.</description>
+  </class>
   <class name="vfr_hud" type="mavros::std_plugins::VfrHudPlugin" base_class_type="mavros::plugin::PluginBase">
     <description>Publish VFR HUD data and WIND estimations.</description>
   </class>

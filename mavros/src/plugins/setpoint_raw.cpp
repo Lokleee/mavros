@@ -300,6 +300,8 @@ private:
 			if (thrust_scaling == 0.0) {
 				ROS_WARN_THROTTLE_NAMED(5, "setpoint_raw", "thrust_scaling parameter is set to zero.");
 			}
+			thrust[0] = req->thrust.x * thrust_scaling;
+			thrust[1] = req->thrust.y * thrust_scaling;
 			thrust[2] = std::min(1.0, std::max(0.0, req->thrust.z * thrust_scaling));
 		}
 

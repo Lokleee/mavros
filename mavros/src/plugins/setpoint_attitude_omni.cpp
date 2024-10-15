@@ -25,6 +25,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <mavros_msgs/ThrustOmni.h>
+#include <ros/ros.h>
 
 namespace mavros {
 namespace std_plugins {
@@ -195,7 +196,9 @@ private:
 		Eigen::Affine3d tr;
 		tf::transformMsgToEigen(transform.transform, tr);
 		Eigen::Vector3d tr2;
-		tf::vectorMsgToEigen(thrust_msg->thrust, tr2);
+		tr2[0] = thrust_msg->thrust.x;
+		tr2[1] = thrust_msg->thrust.y;
+		tr2[2] = thrust_msg->thrust.z;
 
 		send_attitude_quaternion_omni(transform.header.stamp, tr, tr2);
 	}
@@ -204,7 +207,9 @@ private:
 		Eigen::Affine3d tr;
 		tf::poseMsgToEigen(pose_msg->pose, tr);
 		Eigen::Vector3d tr2;
-		tf::vectorMsgToEigen(thrust_msg->thrust, tr2);
+		tr2[0] = thrust_msg->thrust.x;
+		tr2[1] = thrust_msg->thrust.y;
+		tr2[2] = thrust_msg->thrust.z;
 
 		if (is_normalized(thrust_msg->thrust.z))
 			send_attitude_quaternion_omni(pose_msg->header.stamp, tr, tr2);
@@ -215,6 +220,7 @@ private:
 		tf::vectorMsgToEigen(req->twist.angular, ang_vel);
 		Eigen::Vector3d tr2;
 		tf::vectorMsgToEigen(thrust_msg->thrust, tr2);
+		tr2 = ftf::transform_frame_baselink_aircraft(tr2);
 
 		if (is_normalized(thrust_msg->thrust.z))
 			send_attitude_ang_velocity_omni(req->header.stamp, ang_vel, tr2);

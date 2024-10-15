@@ -192,7 +192,6 @@ public:
 		sp.body_pitch_rate = body_rate.y();
 		sp.body_yaw_rate = body_rate.z();
 		// [[[end]]] (checksum: aa941484927bb7a7d39a2c31d08fcfc1)
-		// ROS_INFO("setting the omni attitude target");
 
 		UAS_FCU(m_uas_)->send_message_ignore_drop(sp);
 	}
